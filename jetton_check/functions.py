@@ -171,14 +171,12 @@ def process_new_pools(
                         )
                         telegram_client.send_message(
                             chat_id,
-                            print(
-                                build_telegram_jetton_message(
-                                    jetton_master,
-                                    liquidity_state,
-                                    liquidity_master.account.address_b64,
-                                    airdrop_receivers=airdrop_receivers,
-                                    total_airdrop=total_airdrop,
-                                )
+                            build_telegram_jetton_message(
+                                jetton_master,
+                                liquidity_state,
+                                liquidity_master.account.address_b64,
+                                airdrop_receivers=airdrop_receivers,
+                                total_airdrop=total_airdrop,
                             ),
                         )
                     is_good = 1
