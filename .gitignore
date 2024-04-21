@@ -1,3 +1,4 @@
 .env
 *cache*
 *.pyc
+scanned_tokens.csv
