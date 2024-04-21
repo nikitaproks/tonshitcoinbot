@@ -86,8 +86,8 @@ def build_telegram_jetton_message(
     airdrop_receivers: dict[str, dict] = {},
     total_airdrop: float = 0.0,
 ):
-    message: str = ""
-    message += f"💩<b>Jetton: {jetton_master.data.metadata.name} ({jetton_master.data.metadata.symbol})</b>💩"
+    message: str = "💹💹💹💹💹💹💹💹"
+    message += f"\n💩<b>Jetton: {jetton_master.data.metadata.name} ({jetton_master.data.metadata.symbol})</b>💩"
     message += f"\n<b>Address:</b> {jetton_master.account.address_b64}"
     message += "\n"
     message += f"\n<b>Socials:</b> {'\n' + '\n'.join(jetton_master.data.metadata.socials) if jetton_master.data.metadata.socials else "No socials found" }"

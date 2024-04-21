@@ -61,6 +61,9 @@ async def command_start_handler(message: Message) -> None:
 
 @dp.message()
 async def token_handler(message: Message) -> None:
+    if not isinstance(message.text, str):
+        return
+
     addresses = re.findall(address_regex, message.text)
     if not addresses:
         return
