@@ -89,7 +89,7 @@ async def token_handler(message: Message) -> None:
                 liquidity_state,
                 pools_masters[0].account.address_b64,
                 airdrop_receivers=airdrop_receivers,
-                total_airdrop=total_airdrop,
+                total_airdrop_percent=total_airdrop,
             )
             await message.answer(text)
         except Exception as e:

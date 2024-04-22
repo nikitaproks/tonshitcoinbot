@@ -106,7 +106,8 @@ def build_telegram_jetton_message(
 def is_token_to_process(
     token_address: str, scanned_tokens: list[list[str | int]]
 ) -> bool:
-    for token in scanned_tokens:
+    clone_tokens = [token[:] for token in scanned_tokens]
+    for token in clone_tokens:
         if token[2] == token_address:
             created_at, _, token_address, is_good = token
             created_at_dt = datetime.strptime(
@@ -115,10 +116,10 @@ def is_token_to_process(
             if is_good == 1 or created_at_dt < datetime.now(UTC) - timedelta(
                 hours=2
             ):
-                pass
+                return False
             else:
                 scanned_tokens.remove(token)
-            return True
+                return True
     return True
 
 
@@ -134,6 +135,13 @@ def process_new_pools(
     logger.info(f"Found {len(addresses)} new pools")
 
     scanned_tokens = read_csv("scanned_tokens.csv")
+    addresses = [
+        [
+            "2024-04-22T06:53:24Z",
+            "EQCRpGrY5c4RgZhZe2IwL4r7r2_TLoIy0WETaJOnTVnl4dng",
+            "EQDyqnlbFPtlzn262q9pgegMOdpr1DG_Fua502N091GmPQVc",
+        ]
+    ]
     logger.info("Processing pools")
     pbar = tqdm(addresses)
     for created_at, pool_address, token_address in addresses:

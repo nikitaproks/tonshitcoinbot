@@ -76,7 +76,9 @@ class Ton:
             )
         result = []
         for new_pool_data in new_pools_datas:
-            if float(new_pool_data["attributes"]["fdv_usd"]) < 3000:
+            fdv_usd = float(new_pool_data["attributes"]["fdv_usd"])
+            reserve_usd = float(new_pool_data["attributes"]["reserve_in_usd"])
+            if fdv_usd < 2000 or reserve_usd / fdv_usd < 0.05:
                 continue
             creation = new_pool_data["attributes"]["pool_created_at"]
             pool_address = new_pool_data["attributes"]["address"]
