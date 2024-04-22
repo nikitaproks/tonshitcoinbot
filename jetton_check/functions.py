@@ -133,13 +133,6 @@ def process_new_pools(
     scanned_tokens = read_csv("scanned_tokens.csv")
 
     logger.info("Processing pools")
-    addresses = [
-        (
-            "2024-04-21T22:33:15Z",
-            "EQD6Z3v85_FPcfwRmPUa2eGGzR_No0pGG6fy3P_iFR8lYhbe",
-            "EQDNLrrwm7llKkce0YArDb53jeEP3rRRnJVpvDKA1675T2ft",
-        )
-    ]
     pbar = tqdm(addresses)
     for created_at, pool_address, token_address in addresses:
         try:
