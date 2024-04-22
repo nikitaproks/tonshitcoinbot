@@ -113,9 +113,9 @@ def is_token_to_process(
             created_at_dt = datetime.strptime(
                 created_at, "%Y-%m-%dT%H:%M:%SZ"
             ).replace(tzinfo=timezone.utc)
-            if is_good == 1 or created_at_dt < datetime.now(UTC) - timedelta(
-                hours=2
-            ):
+            if int(is_good) == 1 or created_at_dt < datetime.now(
+                UTC
+            ) - timedelta(hours=2):
                 return False
             else:
                 scanned_tokens.remove(token)
