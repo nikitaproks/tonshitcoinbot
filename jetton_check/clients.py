@@ -9,8 +9,6 @@ from models import (
     JettonData,
 )
 
-semaphore = threading.Semaphore(1)
-
 
 class ApiClient:
     def __init__(self, url: str, auth: str = None, pause_seconds: int = 1):
@@ -21,12 +19,13 @@ class ApiClient:
         self.client = httpx.Client(headers=headers)
         self.last_exec: float = 0.0
         self.pause_seconds = pause_seconds
+        self.semaphore = threading.Semaphore(pause_seconds)
 
     def _request(
         self, method: str, url: str, data: dict | None = None
     ) -> dict:
-        with semaphore:
-            time.sleep(1)
+        with self.semaphore:
+            time.sleep(self.pause_seconds)
             response = self.client.request(method, url, json=data)
 
             if response.status_code > 299:

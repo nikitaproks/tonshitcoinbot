@@ -37,6 +37,8 @@ class Ton:
         if top_liq_holder.account.address == LiquidityState.TonInuLocked.value:
             return LiquidityState.TonInuLocked
 
+        return LiquidityState.NotSafe
+
     def rate_jetton(
         self,
         jetton_master: JettonMaster,
@@ -53,6 +55,7 @@ class Ton:
         if self.check_liquidity_state(liquidity_master) in [
             LiquidityState.Burned,
             LiquidityState.TonInuLocked,
+            LiquidityState.Undefined,
         ]:
             rating += 1
         if (

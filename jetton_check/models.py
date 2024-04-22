@@ -50,7 +50,8 @@ class LiquidityState(Enum):
         "0:f7d8b5faf56677ef9349d32f1be567722b4dd756378e6835ae580553ba2a3563"
     )
     NoHolders = "No owners"
-    NotSafe = "other"
+    NotSafe = "Other"
+    Undefined = "undefined"
 
 
 class TokenReport(str, Enum):
