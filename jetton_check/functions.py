@@ -113,9 +113,12 @@ def is_token_to_process(
                 created_at, "%Y-%m-%dT%H:%M:%SZ"
             ).replace(tzinfo=timezone.utc)
             if is_good == 1 or created_at_dt < datetime.now(UTC) - timedelta(
-                hours=24
+                hours=2
             ):
-                return False
+                pass
+            else:
+                scanned_tokens.remove(token)
+            return True
     return True
 
 
@@ -131,7 +134,13 @@ def process_new_pools(
     logger.info(f"Found {len(addresses)} new pools")
 
     scanned_tokens = read_csv("scanned_tokens.csv")
-
+    addresses = [
+        [
+            "2024-04-21T22:33:15Z",
+            "EQD6Z3v85_FPcfwRmPUa2eGGzR_No0pGG6fy3P_iFR8lYhbe",
+            "EQDNLrrwm7llKkce0YArDb53jeEP3rRRnJVpvDKA1675T2ft",
+        ]
+    ]
     logger.info("Processing pools")
     pbar = tqdm(addresses)
     for created_at, pool_address, token_address in addresses:
@@ -143,10 +152,6 @@ def process_new_pools(
             if not is_token_to_process(token_address, scanned_tokens):
                 pbar.update(1)
                 continue
-            else:
-                scanned_tokens.remove(
-                    [created_at, pool_address, token_address, str(is_good)]
-                )
 
             try:
                 jetton_master = ton.get_jetton_master(token_address)
