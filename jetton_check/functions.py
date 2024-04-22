@@ -84,7 +84,7 @@ def build_telegram_jetton_message(
     liquidity_state: LiquidityState,
     liquidity_master_address_b64: str,
     airdrop_receivers: dict[str, dict] = {},
-    total_airdrop: float = 0.0,
+    total_airdrop_percent: float = 0.0,
 ):
     message: str = "💹💹💹💹💹💹💹💹"
     message += f"\n💩<b>Jetton: {jetton_master.data.metadata.name} ({jetton_master.data.metadata.symbol})</b>💩"
@@ -95,7 +95,7 @@ def build_telegram_jetton_message(
     message += f"\n<b>Mintable:</b> {jetton_master.data.mintable}"
     message += f"\n<b>Ownership revoked:</b> {jetton_master.admin_address == '0:0000000000000000000000000000000000000000000000000000000000000000'}"
     message += f"\n<b>Liquidity:</b> {liquidity_state.name}"
-    message += f"\n<b>Airdrop:</b> amount - {total_airdrop}%, receivers - {len(airdrop_receivers)}"
+    message += f"\n<b>Airdrop:</b> amount - {total_airdrop_percent}%, receivers - {len(airdrop_receivers)}"
     message += "\n"
     message += jetton_master.build_top_ten_message()
     message += "\n"
@@ -134,13 +134,6 @@ def process_new_pools(
     logger.info(f"Found {len(addresses)} new pools")
 
     scanned_tokens = read_csv("scanned_tokens.csv")
-    addresses = [
-        [
-            "2024-04-21T22:33:15Z",
-            "EQD6Z3v85_FPcfwRmPUa2eGGzR_No0pGG6fy3P_iFR8lYhbe",
-            "EQDNLrrwm7llKkce0YArDb53jeEP3rRRnJVpvDKA1675T2ft",
-        ]
-    ]
     logger.info("Processing pools")
     pbar = tqdm(addresses)
     for created_at, pool_address, token_address in addresses:
