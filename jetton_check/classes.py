@@ -280,7 +280,9 @@ class Ton:
                     if key not in airdrop_receivers:
                         airdrop_receivers[key] = {
                             "amount": 0,
-                            "name": action.JettonTransfer.recipient.name,
+                            "name": action.JettonTransfer.recipient.name
+                            if action.JettonTransfer.recipient
+                            else None,
                         }
 
                     airdrop_receivers[key]["amount"] += int(
