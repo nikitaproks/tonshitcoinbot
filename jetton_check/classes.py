@@ -61,7 +61,7 @@ class Ton:
         ):
             rating += 1
 
-        if total_airdrop <= 0.2:
+        if total_airdrop <= 20:
             rating += 1
 
         return rating

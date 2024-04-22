@@ -103,6 +103,22 @@ def build_telegram_jetton_message(
     return message
 
 
+def is_token_to_process(
+    token_address: str, scanned_tokens: list[list[str | int]]
+) -> bool:
+    for token in scanned_tokens:
+        if token[2] == token_address:
+            created_at, _, token_address, is_good = token
+            created_at_dt = datetime.strptime(
+                created_at, "%Y-%m-%dT%H:%M:%SZ"
+            ).replace(tzinfo=timezone.utc)
+            if is_good == 1 or created_at_dt < datetime.now(UTC) - timedelta(
+                hours=24
+            ):
+                return False
+    return True
+
+
 def process_new_pools(
     ton: Ton,
     telegram_client: TelegramBotClient,
@@ -117,6 +133,13 @@ def process_new_pools(
     scanned_tokens = read_csv("scanned_tokens.csv")
 
     logger.info("Processing pools")
+    addresses = [
+        (
+            "2024-04-21T22:33:15Z",
+            "EQD6Z3v85_FPcfwRmPUa2eGGzR_No0pGG6fy3P_iFR8lYhbe",
+            "EQDNLrrwm7llKkce0YArDb53jeEP3rRRnJVpvDKA1675T2ft",
+        )
+    ]
     pbar = tqdm(addresses)
     for created_at, pool_address, token_address in addresses:
         try:
@@ -124,19 +147,13 @@ def process_new_pools(
             pbar.set_description(
                 f"Processing pool {pool_address} with token {token_address}"
             )
-
-            if token := [t for t in scanned_tokens if t[2] == token_address]:
-                created_at, pool_address, token_address, is_good = token[0]
-                created_at_dt = datetime.strptime(
-                    created_at, "%Y-%m-%dT%H:%M:%SZ"
-                ).replace(tzinfo=timezone.utc)
-
-                if is_good == 1:
-                    pbar.update(1)
-                    continue
-                else:
-                    if created_at_dt > datetime.now(UTC) - timedelta(hours=2):
-                        scanned_tokens.remove(token[0])
+            if not is_token_to_process(token_address, scanned_tokens):
+                pbar.update(1)
+                continue
+            else:
+                scanned_tokens.remove(
+                    [created_at, pool_address, token_address, str(is_good)]
+                )
 
             try:
                 jetton_master = ton.get_jetton_master(token_address)
@@ -146,12 +163,12 @@ def process_new_pools(
                 airdrop_receivers, airdrop_sum = ton.process_airdrops(
                     jetton_master
                 )
-                total_airdrop = round(
+                total_airdrop_percent = round(
                     airdrop_sum / jetton_master.data.total_supply * 100,
                     2,
                 )
                 rating = ton.rate_jetton(
-                    jetton_master, liquidity_master, total_airdrop
+                    jetton_master, liquidity_master, total_airdrop_percent
                 )
                 if rating >= 4:
                     if report == TokenReport.ConsolePrint:
@@ -159,7 +176,7 @@ def process_new_pools(
                             jetton_master,
                             [liquidity_master],
                             airdrop_receivers=airdrop_receivers,
-                            total_airdrop=total_airdrop,
+                            total_airdrop=total_airdrop_percent,
                         )
                     elif report == TokenReport.TelegramMessage:
                         liquidity_state = ton.check_liquidity_state(
@@ -176,7 +193,7 @@ def process_new_pools(
                                 liquidity_state,
                                 liquidity_master.account.address_b64,
                                 airdrop_receivers=airdrop_receivers,
-                                total_airdrop=total_airdrop,
+                                total_airdrop_percent=total_airdrop_percent,
                             ),
                         )
                     is_good = 1
