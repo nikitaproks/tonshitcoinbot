@@ -117,15 +117,3 @@ class GeckoTerminalClient(ApiClient):
         return self._request(
             "GET", f"{self.url}/networks/ton/new_pools?page={page}"
         )
-
-
-class TelegramBotClient:
-    def __init__(self, bot_token: str):
-        self.url = f"https://api.telegram.org/bot{bot_token}"
-        self.client = httpx.Client()
-
-    def send_message(self, chat_id: str, text: str):
-        return self.client.post(
-            f"{self.url}/sendMessage",
-            json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
-        )

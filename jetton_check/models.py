@@ -244,7 +244,7 @@ class JettonMaster(BaseModel):
 
     def build_top_ten_message(self, with_address: bool = False):
         top_ten = self.get_top_ten()
-        message = f"\n<b>Top 10 - {self.calculate_top_ten_percent()}%</b>\n"
+        message = f"\nTop 10 - {self.calculate_top_ten_percent()}%\n"
         for i, holder in enumerate(top_ten):
             message += f"{i+1}. \t {self.get_holder_string(holder, with_address=with_address)}\n"
         return message

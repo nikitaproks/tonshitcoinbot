@@ -1,12 +1,13 @@
 import csv
 import os
 import logging
+import argparse
 from datetime import datetime, timedelta, UTC, timezone
 
-import argparse
+from aiogram import Bot
+from aiogram.utils.formatting import Code, Text
 from tqdm import tqdm
 
-from clients import TelegramBotClient
 from classes import Ton
 from models import JettonMaster, LiquidityState, TokenReport
 
@@ -86,22 +87,31 @@ def build_telegram_jetton_message(
     airdrop_receivers: dict[str, dict] = {},
     total_airdrop_percent: float = 0.0,
 ):
-    message: str = "💹💹💹💹💹💹💹💹"
-    message += f"\n💩<b>Jetton: {jetton_master.data.metadata.name} ({jetton_master.data.metadata.symbol})</b>💩"
-    message += f"\n<b>Address:</b> {jetton_master.account.address_b64}"
-    message += "\n"
-    message += f"\n<b>Socials:</b> {'\n' + '\n'.join(jetton_master.data.metadata.socials) if jetton_master.data.metadata.socials else "No socials found" }"
-    message += "\n"
-    message += f"\n<b>Contract:</b> {'Custom (MIGHT BE A SCAM)' if jetton_master.used_cells <42 else 'Seems okay'}"
-    message += f"\n<b>Mintable:</b> {jetton_master.data.mintable}"
-    message += f"\n<b>Ownership revoked:</b> {jetton_master.admin_address == '0:0000000000000000000000000000000000000000000000000000000000000000'}"
-    message += f"\n<b>Liquidity:</b> {liquidity_state.name}"
-    message += f"\n<b>Airdrop:</b> amount - {total_airdrop_percent}%, receivers - {len(airdrop_receivers)}"
-    message += "\n"
-    message += jetton_master.build_top_ten_message()
-    message += "\n"
-    message += f"https://www.geckoterminal.com/ton/pools/{liquidity_master_address_b64}"
-    return message
+    message: list[str | Text | Code] = []
+    message.append("💹💹💹💹💹💹💹💹")
+    message += f"\n💩Jetton: {jetton_master.data.metadata.name} ({jetton_master.data.metadata.symbol})💩\nAddress: "
+    message.append(Code(jetton_master.account.address_b64))
+    message.append(
+        f"\n\nSocials: {'\n' + '\n'.join(jetton_master.data.metadata.socials) if jetton_master.data.metadata.socials else "No socials found" }\n"
+    )
+    message.append(
+        f"\nContract: {'Custom (MIGHT BE A SCAM)' if jetton_master.used_cells <42 else 'Seems okay'}"
+    )
+    message.append(f"\nMintable: {jetton_master.data.mintable}")
+    message.append(
+        f"\nOwnership revoked: {jetton_master.admin_address == '0:0000000000000000000000000000000000000000000000000000000000000000'}"
+    )
+    message.append(f"\nLiquidity: {liquidity_state.name}")
+    message.append(
+        f"\nAirdrop: amount - {total_airdrop_percent}%, receivers - {len(airdrop_receivers)}"
+    )
+    message.append("\n")
+    message.append(jetton_master.build_top_ten_message())
+    message.append("\n")
+    message.append(
+        f"https://www.geckoterminal.com/ton/pools/{liquidity_master_address_b64}"
+    )
+    return Text(*message).as_kwargs()
 
 
 def is_token_to_process(
@@ -126,7 +136,7 @@ def is_token_to_process(
 
 def process_new_pools(
     ton: Ton,
-    telegram_client: TelegramBotClient,
+    bot: Bot,
     chat_id: str,
     pages: int,
     report: TokenReport = TokenReport.ConsolePrint,
@@ -179,9 +189,9 @@ def process_new_pools(
                         liquidity_state = ton.check_liquidity_state(
                             liquidity_master
                         )
-                        telegram_client.send_message(
+                        bot.send_message(
                             chat_id,
-                            build_telegram_jetton_message(
+                            **build_telegram_jetton_message(
                                 jetton_master,
                                 liquidity_state,
                                 liquidity_master.account.address_b64,

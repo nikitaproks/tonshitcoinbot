@@ -17,7 +17,7 @@ from aiogram.types import Message
 import schedule
 from dotenv import load_dotenv
 
-from clients import TonViewerClient, GeckoTerminalClient, TelegramBotClient
+from clients import TonViewerClient, GeckoTerminalClient
 from classes import Ton
 from functions import (
     collect_arguments,
@@ -45,13 +45,18 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.ERROR)
 
 dp = Dispatcher()
+bot = Bot(
+    token=TELEGRAM_BOT_TOKEN,
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+)
+
 tv_client = TonViewerClient(
     "https://tonapi.io/v2",
     auth="AEY3CRGXLSSUGQIAAAAEFEU3GVXEWZFOORXSKXOIJKOYAJ5IGM2GCSLWPFBORPY26WM5DUI",
 )
 gt_client = GeckoTerminalClient("https://api.geckoterminal.com/api/v2")
 ton = Ton(tv_client, gt_client)
-telegram_client = TelegramBotClient(TELEGRAM_BOT_TOKEN)
+# telegram_client = TelegramBotClient(TELEGRAM_BOT_TOKEN)
 
 
 @dp.message(CommandStart())
@@ -91,7 +96,7 @@ async def token_handler(message: Message) -> None:
                 airdrop_receivers=airdrop_receivers,
                 total_airdrop_percent=total_airdrop,
             )
-            await message.answer(text)
+            await message.answer(**text)
         except Exception as e:
             logging.error(f"Error while processing token {address}: {e}")
             await message.answer(
@@ -101,7 +106,7 @@ async def token_handler(message: Message) -> None:
 
 def run_scheduler(
     ton: Ton,
-    telegram_client: TelegramBotClient,
+    bot: Bot,
     schedule_minutes: int,
     pages: int,
 ):
@@ -109,7 +114,7 @@ def run_scheduler(
     schedule.every(schedule_minutes).minutes.do(
         process_new_pools,
         ton=ton,
-        telegram_client=telegram_client,
+        telegram_client=bot,
         chat_id=TELEGRAM_CHAT_ID,
         pages=pages,
         report=TokenReport.TelegramMessage,
@@ -117,7 +122,7 @@ def run_scheduler(
     # Initial run
     process_new_pools(
         ton,
-        telegram_client,
+        bot,
         TELEGRAM_CHAT_ID,
         pages,
         report=TokenReport.TelegramMessage,
@@ -129,10 +134,6 @@ def run_scheduler(
 
 
 async def run_bot():
-    bot = Bot(
-        token=TELEGRAM_BOT_TOKEN,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-    )
     await dp.start_polling(bot)
 
 
@@ -160,7 +161,7 @@ def main():
                 target=run_scheduler,
                 args=(
                     ton,
-                    telegram_client,
+                    bot,
                     cli_args.schedule,
                     cli_args.pages,
                 ),
@@ -173,9 +174,7 @@ def main():
 
         else:
             logging.info("Running scan once")
-            process_new_pools(
-                ton, telegram_client, TELEGRAM_CHAT_ID, cli_args.pages
-            )
+            process_new_pools(ton, bot, TELEGRAM_CHAT_ID, cli_args.pages)
 
 
 if __name__ == "__main__":
