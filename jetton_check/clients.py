@@ -99,6 +99,12 @@ class TonViewerClient(ApiClient):
             f"{self.url}/blockchain/accounts/{address}/methods/{method}",
         )
 
+    def low_level_account_info(self, address: str) -> dict:
+        return self._request(
+            "GET",
+            f"{self.url}/blockchain/accounts/{address}",
+        )
+
 
 class GeckoTerminalClient(ApiClient):
     def get_jetton_pools(self, jetton_address: str):

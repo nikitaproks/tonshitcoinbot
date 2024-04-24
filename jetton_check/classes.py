@@ -250,11 +250,15 @@ class Ton:
             "bounceable"
         ]["b64url"]
         account.address_b64 = address_b64
+        used_cells = self.tv_client.low_level_account_info(account.address)[
+            "storage"
+        ]["used_cells"]
 
         return JettonMaster(
             account=account,
             admin_address=admin_address,
             data=data,
+            used_cells=used_cells,
             creator=creator,
             holders=holders,
             events=events,

@@ -215,6 +215,7 @@ class JettonMaster(BaseModel):
     account: Account
     admin_address: str
     data: JettonData
+    used_cells: int
     creator: Wallet | None
     holders: list[Wallet] = []
 

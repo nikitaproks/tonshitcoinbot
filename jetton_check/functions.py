@@ -92,6 +92,7 @@ def build_telegram_jetton_message(
     message += "\n"
     message += f"\n<b>Socials:</b> {'\n' + '\n'.join(jetton_master.data.metadata.socials) if jetton_master.data.metadata.socials else "No socials found" }"
     message += "\n"
+    message += f"\n<b>Contract:</b> {'Custom (MIGHT BE A SCAM)' if jetton_master.used_cells <42 else 'Seems okay'}"
     message += f"\n<b>Mintable:</b> {jetton_master.data.mintable}"
     message += f"\n<b>Ownership revoked:</b> {jetton_master.admin_address == '0:0000000000000000000000000000000000000000000000000000000000000000'}"
     message += f"\n<b>Liquidity:</b> {liquidity_state.name}"
