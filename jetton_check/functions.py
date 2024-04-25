@@ -134,7 +134,7 @@ def is_token_to_process(
     return True
 
 
-def process_new_pools(
+async def process_new_pools(
     ton: Ton,
     bot: Bot,
     chat_id: str,
@@ -144,7 +144,6 @@ def process_new_pools(
     logger.info(f"Processing {pages} pages of new pools")
     addresses = ton.get_new_pools_and_tokens_addresses(pages)
     logger.info(f"Found {len(addresses)} new pools")
-
     scanned_tokens = read_csv("scanned_tokens.csv")
     logger.info("Processing pools")
     pbar = tqdm(addresses)
@@ -189,7 +188,8 @@ def process_new_pools(
                         liquidity_state = ton.check_liquidity_state(
                             liquidity_master
                         )
-                        bot.send_message(
+
+                        await bot.send_message(
                             chat_id,
                             **build_telegram_jetton_message(
                                 jetton_master,

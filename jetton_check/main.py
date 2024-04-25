@@ -3,8 +3,6 @@
 import os
 import re
 import logging
-import time
-import threading
 import asyncio
 
 from aiogram import Bot, Dispatcher
@@ -14,7 +12,6 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 
 
-import schedule
 from dotenv import load_dotenv
 
 from clients import TonViewerClient, GeckoTerminalClient
@@ -104,40 +101,19 @@ async def token_handler(message: Message) -> None:
             )
 
 
-def run_scheduler(
-    ton: Ton,
-    bot: Bot,
-    schedule_minutes: int,
-    pages: int,
-):
-    logging.info(f"Running scan every {schedule_minutes} minutes")
-    schedule.every(schedule_minutes).minutes.do(
-        process_new_pools,
-        ton=ton,
-        telegram_client=bot,
-        chat_id=TELEGRAM_CHAT_ID,
-        pages=pages,
-        report=TokenReport.TelegramMessage,
-    )
-    # Initial run
-    process_new_pools(
-        ton,
-        bot,
-        TELEGRAM_CHAT_ID,
-        pages,
-        report=TokenReport.TelegramMessage,
-    )
-    # Run scheduler
+async def run_scheduler(ton, bot, chat_id, schedule_minutes, pages):
     while True:
-        schedule.run_pending()
-        time.sleep(1)
+        await process_new_pools(
+            ton, bot, chat_id, pages, TokenReport.TelegramMessage
+        )
+        await asyncio.sleep(schedule_minutes * 60)
 
 
 async def run_bot():
     await dp.start_polling(bot)
 
 
-def main():
+async def main():
     cli_args = collect_arguments()
     if cli_args.info is not None:
         logging.info(f"Getting info for jetton {cli_args.info}")
@@ -157,25 +133,17 @@ def main():
         )
     elif cli_args.new:
         if cli_args.schedule:
-            scheduler_thread = threading.Thread(
-                target=run_scheduler,
-                args=(
+            asyncio.create_task(
+                run_scheduler(
                     ton,
                     bot,
+                    TELEGRAM_CHAT_ID,
                     cli_args.schedule,
                     cli_args.pages,
-                ),
+                )
             )
-            logging.info("Starting scheduler thread")
-            scheduler_thread.start()
-            logging.info("Running bot")
-            asyncio.run(run_bot())
-            scheduler_thread.join()
-
-        else:
-            logging.info("Running scan once")
-            process_new_pools(ton, bot, TELEGRAM_CHAT_ID, cli_args.pages)
+        await run_bot()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
